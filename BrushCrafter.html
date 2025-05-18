@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BrushCrafter</title>
+<link rel="icon" href="brushcrafter_icon.png" type="image/png" />
+<style>
+  /* Reset básico */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #121212;
+    color: #eee;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  header {
+    background: linear-gradient(45deg, #ff6f00, #ffab40);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(255, 111, 0, 0.7);
+    user-select: none;
+  }
+  header h1 {
+    font-weight: 900;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    color: white;
+    text-shadow: 0 0 12px rgba(255, 140, 0, 0.9);
+    margin: 0;
+    font-family: 'Segoe UI Black', Arial Black, Arial Bold, Arial, sans-serif;
+  }
+
+  main {
+    flex-grow: 1;
+    padding: 2rem 1rem 3rem;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 90vw;
+  }
+
+  button {
+    background: linear-gradient(90deg, #ff6f00, #ffa726);
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    padding: 14px 36px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(255, 143, 0, 0.9);
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 1.3px;
+    margin-top: 1rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+  button:hover,
+  button:focus {
+    background: linear-gradient(90deg, #ffa726, #ff6f00);
+    box-shadow: 0 10px 40px rgba(255, 167, 38, 1);
+    outline: none;
+  }
+  button:focus-visible {
+    outline: 3px solid #ffd180;
+    outline-offset: 3px;
+  }
+
+  /* Pantalla */
+  section {
+    display: none;
+  }
+  section.active {
+    display: block;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #ffb74d;
+    user-select: none;
+    display: block;
+  }
+  select, input[type="text"], input[type="number"] {
+    background: #222;
+    border: 2px solid #555;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: #ffe082;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+  }
+  select:focus, input[type="text"]:focus, input[type="number"]:focus {
+    border-color: #ff6f00;
+    box-shadow: 0 0 8px #ff6f00cc;
+    outline: none;
+  }
+
+  /* Placeholder destacados para inputs */
+  input::placeholder {
+    color: #b87d2a;
+    opacity: 0.8;
+  }
+
+  /* Checkboxes */
+  .flags {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    gap: 2.5rem;
+  }
+  .flags label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #ffb74d;
+    font-weight: 700;
+    user-select: none;
+    font-size: 1.05rem;
+  }
+  .flags input[type="checkbox"] {
+    margin-right: 0.5rem;
+    width: 22px;
+    height: 22px;
+    accent-color: #ff6f00;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .flags input[type="checkbox"]:focus-visible {
+    outline: none;
+    border-color: #ff6f00;
+  }
+
+  /* Form layout */
+  form {
+    margin-top: 2rem;
+  }
+  .form-row {
+    display: flex;
+    gap: 1.8rem;
+    margin-bottom: 1.6rem;
+    flex-wrap: wrap;
+  }
+  .form-col {
+    flex: 1 1 48%;
+  }
+  @media (max-width: 480px) {
+    .form-row {
+      flex-direction: column;
+    }
+    .form-col {
+      flex: 1 1 100%;
+    }
+  }
+
+  /* Output container with glow */
+  #commandOutput {
+    margin-top: 3rem;
+    background: #1f1f1f;
+    border-radius: 14px;
+    padding: 2rem 2.5rem;
+    font-family: monospace;
+    font-size: 1.2rem;
+    line-height: 1.4;
+    color: #ffcb6b;
+    box-shadow:
+      inset 0 0 10px 4px #ff6f00,
+      0 0 30px 7px rgba(255, 111, 0, 0.9);
+    user-select: all;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 60px;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  /* Text inputs disabled style */
+  input:disabled, select:disabled {
+    background-color: #333;
+    border-color: #444;
+    color: #777;
+    cursor: not-allowed;
+  }
+
+  /* Tooltip style for command copied */
+  #copyTooltip {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.7rem 1.3rem;
+    background: #ff6f00cc;
+    color: white;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 0 12px #ff6f00cc;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 9999;
+  }
+  #copyTooltip.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>BrushCrafter</h1>
+</header>
+
+<main>
+  <!-- Pantalla Inicio -->
+  <section id="startScreen" class="active" aria-label="Pantalla de inicio">
+    <button id="startBtn" type="button" aria-label="Iniciar BrushCrafter">Start</button>
+  </section>
+
+  <!-- Pantalla Selección -->
+  <section id="selectorScreen" aria-label="Panel de selección y generación de comandos">
+    <form id="brushForm" onsubmit="return false;" autocomplete="off">
+      <div class="form-row">
+        <div class="form-col">
+          <label for="modeSelect">Modo</label>
+          <select id="modeSelect" name="mode" aria-describedby="modeDesc" aria-live="polite" aria-atomic="true" title="Selecciona el modo (WorldEdit o Arceon)">
+            <option value="WorldEdit">WorldEdit</option>
+            <option value="Arceon" selected>Arceon</option>
+          </select>
+          <div id="modeDesc" class="sr-only">Seleccione el modo de herramienta</div>
+        </div>
+        <div class="form-col">
+          <label for="brushTypeSelect">Brush Type</label>
+          <select id="brushTypeSelect" name="brushType" aria-live="polite" aria-atomic="true" title="Selecciona el tipo de pincel"></select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col" style="flex:1 1 100%;">
+          <label for="blockInput">Block</label>
+          <input type="text" id="blockInput" name="block" value="stone" autocomplete="off" aria-required="true" placeholder="Ejemplo: stone, minecraft:dirt" title="Introduce el bloque a usar (solo caracteres alfanuméricos, dos puntos y guiones bajos)" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <label for="sizeInput">Size</label>
+          <input type="number" id="sizeInput" name="size" min="1" max="100" value="1" title="Tamaño del pincel" />
+        </div>
+        <div class="form-col">
+          <label for="heightInput">Height</label>
+          <input type="number" id="heightInput" name="height" min="0" max="100" value="1" title="Altura para pinceles que lo usen" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <label for="angleInput">Angle</label>
+          <input type="number" id="angleInput" name="angle" min="0" max="360" value="0" title="Ángulo (0-360 grados)" />
+        </div>
+        <div class="form-col">
+          <label for="amountInput">Amount</label>
+          <input type="number" id="amountInput" name="amount" min="0" max="100" value="0" title="Cantidad para pinceles que lo usan" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col" style="flex:1 1 100%;">
+          <label for="widthInput">Width</label>
+          <input type="number" id="widthInput" name="width" min="1" max="100" value="1" title="Ancho para pinceles que lo usan" />
+        </div>
+      </div>
+
+      <fieldset class="flags" aria-label="Flags de comando"
+        title="Selecciona las flags para modificar el comportamiento del pincel">
+        <legend style="color:#ffb74d; font-weight:700; margin-bottom:0.8rem;">Flags</legend>
+        <label><input type="checkbox" id="flagH" name="flagH" /> -h</label>
+        <label><input type="checkbox" id="flagF" name="flagF" /> -f</label>
+        <label><input type="checkbox" id="flagA" name="flagA" /> -a</label>
+      </fieldset>
+
+      <div style="text-align: center; margin-top: 2.5rem;">
+        <button id="generateBtn" type="button" aria-label="Generar comando">Generate Command</button>
+        <button id="backBtn" type="button" aria-label="Volver al inicio" style="margin-left: 1.8rem; background: #444; box-shadow:none;">Back</button>
+      </div>
+    </form>
+
+    <pre id="commandOutput" aria-live="polite" aria-label="Comando generado" tabindex="0" title="Comando generado, clic para seleccionar y copiar"></pre>
+  </section>
+</main>
+
+<!-- Tooltip para copiado -->
+<div id="copyTooltip" role="alert" aria-live="assertive" aria-atomic="true">Command copied!</div>
+
+<script>
+  const brushes = {
+    "WorldEdit": ["sphere", "cylinder", "disc", "smooth", "gravity", "clipboard", "scatter", "apply", "pull", "surface", "clipboard2d", "fall"],
+    "Arceon": ["spike", "boulder", "vine", "cube", "blob", "line", "wire", "overlay", "slide", "erodeblend", "wave", "arc", "path"]
+  };
+
+  const brushParams = {
+    "sphere": {"size": [1, 100]},
+    "cylinder": {"size": [1, 100], "height": [1, 50], "amount": [0, 5], "width": [1, 100]},
+    "disc": {"size": [1, 100]},
+    "smooth": {"size": [1, 20], "amount": [1, 10]},
+    "gravity": {"size": [1, 100]},
+    "clipboard": {"size": [1, 50]},
+    "scatter": {"size": [1, 100], "amount": [1, 100], "width": [1, 50]},
+    "apply": {"size": [1, 100]},
+    "pull": {"size": [1, 100]},
+    "surface": {"size": [1, 100], "angle": [0, 360]},
+    "clipboard2d": {"size": [1, 50]},
+    "fall": {"size": [1, 100]},
+    "spike": {"size": [1, 100], "height": [1, 100], "amount": [0, 5], "width": [1, 50]},
+    "boulder": {"size": [1, 100], "height": [1, 50], "angle": [0, 360], "amount": [0, 5], "width": [1, 100]},
+    "vine": {"size": [1, 100], "height": [1, 20], "amount": [0, 100], "width": [1, 10]},
+    "cube": {"size": [1, 100], "angle": [1, 360], "amount": [0, 5], "width": [1, 100]},
+    "blob": {"size": [1, 100]},
+    "line": {"size": [1, 100]},
+    "wire": {"size": [1, 100]},
+    "overlay": {"size": [1, 100]},
+    "slide": {"size": [1, 100]},
+    "erodeblend": {"size": [1, 100]},
+    "wave": {"size": [1, 100]},
+    "arc": {"size": [1, 100], "angle": [0, 360]},
+    "path": {"size": [1, 100]}
+  };
+
+  // Elementos
+  const startScreen = document.getElementById('startScreen');
+  const selectorScreen = document.getElementById('selectorScreen');
+  const startBtn = document.getElementById('startBtn');
+  const backBtn = document.getElementById('backBtn');
+  const modeSelect = document.getElementById('modeSelect');
+  const brushTypeSelect = document.getElementById('brushTypeSelect');
+  const blockInput = document.getElementById('blockInput');
+  const sizeInput = document.getElementById('sizeInput');
+  const heightInput = document.getElementById('heightInput');
+  const angleInput = document.getElementById('angleInput');
+  const amountInput = document.getElementById('amountInput');
+  const widthInput = document.getElementById('widthInput');
+  const flagH = document.getElementById('flagH');
+  const flagF = document.getElementById('flagF');
+  const flagA = document.getElementById('flagA');
+  const generateBtn = document.getElementById('generateBtn');
+  const commandOutput = document.getElementById('commandOutput');
+  const copyTooltip = document.getElementById('copyTooltip');
+
+  // Helpers
+  function fillBrushTypes(mode) {
+    brushTypeSelect.innerHTML = "";
+    brushes[mode].forEach(brush => {
+      const option = document.createElement('option');
+      option.value = brush;
+      option.textContent = brush;
+      brushTypeSelect.appendChild(option);
+    });
+    brushTypeSelect.value = brushes[mode][0] || "";
+  }
+
+  function updateInputField(inputElem, paramName, params) {
+    if (paramName in params) {
+      inputElem.disabled = false;
+      inputElem.min = params[paramName][0];
+      inputElem.max = params[paramName][1];
+      let val = parseInt(inputElem.value, 10);
+      if (isNaN(val) || val < inputElem.min || val > inputElem.max) {
+        inputElem.value = inputElem.min;
+      }
+    } else {
+      inputElem.disabled = true;
+      inputElem.value = (paramName === 'angle' || paramName === 'amount') ? 0 : 1;
+    }
+  }
+
+  function updateParamFields() {
+    const brush = brushTypeSelect.value;
+    const params = brushParams[brush] || {};
+    updateInputField(sizeInput, 'size', params);
+    updateInputField(heightInput, 'height', params);
+    updateInputField(angleInput, 'angle', params);
+    updateInputField(amountInput, 'amount', params);
+    updateInputField(widthInput, 'width', params);
+  }
+
+  function validateInputs() {
+    const blockVal = blockInput.value.trim();
+    if (!blockVal || !/^[a-zA-Z0-9:_\-]+$/.test(blockVal)) {
+      alert('El campo "Block" debe contener solo caracteres alfanuméricos, dos puntos o guiones bajos, y no puede estar vacío.');
+      blockInput.focus();
+      return false;
+    }
+    const paramsToCheck = [
+      {input: sizeInput, name: 'Size'},
+      {input: heightInput, name: 'Height'},
+      {input: angleInput, name: 'Angle'},
+      {input: amountInput, name: 'Amount'},
+      {input: widthInput, name: 'Width'}
+    ];
+    const brush = brushTypeSelect.value;
+    const paramRanges = brushParams[brush] || {};
+    for (let p of paramsToCheck) {
+      if (p.input.disabled) continue;
+      const val = parseInt(p.input.value, 10);
+      if (isNaN(val)) {
+        alert(`El campo "${p.name}" debe tener un valor numérico.`);
+        p.input.focus();
+        return false;
+      }
+      const range = paramRanges[p.input.name];
+      if (range) {
+        if (val < range[0] || val > range[1]) {
+          alert(`El campo "${p.name}" debe estar entre ${range[0]} y ${range[1]}.`);
+          p.input.focus();
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function showCopyTooltip() {
+    copyTooltip.classList.add('show');
+    setTimeout(() => {
+      copyTooltip.classList.remove('show');
+    }, 1600);
+  }
+
+  function generateCommand() {
+    if (!validateInputs()) return;
+
+    const mode = modeSelect.value;
+    const brush = brushTypeSelect.value;
+    const block = blockInput.value.trim();
+
+    const params = [];
+    function tryAddParam(elem) {
+      if (!elem.disabled) {
+        params.push(elem.value);
+      }
+    }
+    tryAddParam(sizeInput);
+    tryAddParam(heightInput);
+    tryAddParam(angleInput);
+    tryAddParam(amountInput);
+    tryAddParam(widthInput);
+
+    const flagsArr = [];
+    if (flagH.checked) flagsArr.push("-h");
+    if (flagF.checked) flagsArr.push("-f");
+    if (flagA.checked) flagsArr.push("-a");
+
+    let prefix = '';
+    if (mode === "WorldEdit") {
+      prefix = "//brush";
+    } else if (mode === "Arceon") {
+      prefix = "//arcbrush";
+    } else {
+      prefix = "//brush";
+    }
+
+    let parts = [prefix, brush, block];
+    if (params.length) parts = parts.concat(params);
+    if (flagsArr.length) parts = parts.concat(flagsArr);
+
+    const cmd = parts.join(' ');
+
+    commandOutput.textContent = cmd;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(cmd).then(() => {
+        showCopyTooltip();
+      }).catch(() => { /* fail silently */ });
+    }
+  }
+
+  startBtn.addEventListener('click', () => {
+    startScreen.classList.remove('active');
+    startScreen.classList.add('hidden');
+    selectorScreen.classList.remove('hidden');
+    selectorScreen.classList.add('active');
+    fillBrushTypes(modeSelect.value);
+    updateParamFields();
+  });
+
+  backBtn.addEventListener('click', () => {
+    selectorScreen.classList.remove('active');
+    selectorScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+    startScreen.classList.add('active');
+    commandOutput.textContent = '';
+  });
+
+  modeSelect.addEventListener('change', () => {
+    fillBrushTypes(modeSelect.value);
+    updateParamFields();
+  });
+
+  brushTypeSelect.addEventListener('change', updateParamFields);
+
+  generateBtn.addEventListener('click', generateCommand);
+
+  commandOutput.addEventListener('click', () => {
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(commandOutput);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
+
+  window.onload = () => {
+    startScreen.classList.add('active');
+  };
+</script>
+
+<style>
+  .sr-only {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+  }
+</style>
+</body>
+</html>
+
